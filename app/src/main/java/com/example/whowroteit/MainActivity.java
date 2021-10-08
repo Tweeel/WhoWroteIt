@@ -25,6 +25,19 @@ public class MainActivity extends AppCompatActivity {
         mBookInput = (EditText)findViewById(R.id.bookInput);
         mTitleText = (TextView)findViewById(R.id.titleText);
         mAuthorText = (TextView)findViewById(R.id.authorText);
+
+        // Restore the state.
+        // See onSaveInstanceState() for what gets saved.
+        if (savedInstanceState != null) {
+            boolean isVisible = savedInstanceState.getBoolean("reply_visible");
+            boolean isVisible2 = savedInstanceState.getBoolean("reply_visible2");
+            if (isVisible && isVisible2) {
+                mTitleText.setVisibility(View.VISIBLE);
+                mTitleText.setText(savedInstanceState.getString("reply_text"));
+                mAuthorText.setVisibility(View.VISIBLE);
+                mAuthorText.setText(savedInstanceState.getString("reply_text2"));
+            }
+        }
     }
 
     public void searchBooks(View view) {
@@ -46,9 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (networkInfo != null && networkInfo.isConnected()
                 && queryString.length() != 0) {
-            new FetchBook(mTitleText, mAuthorText).execute(queryString);
             mAuthorText.setText("");
             mTitleText.setText(R.string.loading);
+            new FetchBook(mTitleText, mAuthorText).execute(queryString);
         } else {
             if (queryString.length() == 0) {
                 mAuthorText.setText("");
@@ -58,5 +71,19 @@ public class MainActivity extends AppCompatActivity {
                 mTitleText.setText(R.string.no_network);
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // If the heading is visible, message needs to be saved.
+        // Otherwise we're still using default layout.
+        if (mTitleText.getVisibility() == View.VISIBLE && mAuthorText.getVisibility() == View.VISIBLE) {
+            outState.putBoolean("reply_visible", true);
+            outState.putString("reply_text",mTitleText.getText().toString());
+            outState.putBoolean("reply_visible2", true);
+            outState.putString("reply_text2",mAuthorText.getText().toString());
+        }
+
     }
 }
